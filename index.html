@@ -1,0 +1,542 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ulos Fraktal Studio</title>
+
+<style>
+:root {
+  --bg: #10121a;
+  --panel: #1b1e29;
+  --gold: #edc47b;
+  --red: #ef5350;
+  --text: #f8f3ea;
+  --muted: #b7bac8;
+  --border: #363a49;
+}
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Arial, sans-serif;
+}
+header {
+  padding: 28px 6%;
+  background: linear-gradient(120deg,#291821,#191b27);
+  border-bottom: 1px solid var(--border);
+}
+header h1 { margin: 0 0 10px; color: var(--gold); }
+header p { margin: 0; color: var(--muted); line-height: 1.7; }
+main { max-width: 1200px; margin: auto; padding: 26px 5%; }
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0,1.5fr) minmax(280px,1fr);
+  gap: 20px;
+}
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
+  min-width: 0;
+}
+h2 { font-size: 19px; margin: 0 0 16px; }
+label { display: block; margin: 16px 0 8px; font-size: 14px; }
+
+select, button {
+  width: 100%;
+  padding: 12px;
+  color: var(--text);
+  background: #292d3a;
+  border: 1px solid #454a5a;
+  border-radius: 9px;
+  font-size: 14px;
+}
+button { cursor: pointer; margin-top: 15px; }
+button:hover { border-color: var(--gold); }
+
+input[type="range"] {
+  width: 100%;
+  accent-color: var(--gold);
+}
+input[type="color"] {
+  width: 100%;
+  height: 42px;
+  padding: 4px;
+  background: #292d3a;
+  border: 1px solid #454a5a;
+  border-radius: 9px;
+  cursor: pointer;
+}
+#levelText, .nilai {
+  color: var(--gold);
+  font-weight: bold;
+}
+canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: #211821;
+  border-radius: 10px;
+}
+.note {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.7;
+}
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3,minmax(0,1fr));
+  gap: 10px;
+}
+.stat {
+  background: #282b38;
+  border-radius: 10px;
+  padding: 14px;
+  min-width: 0;
+}
+.stat p { margin: 0 0 10px; color: var(--muted); font-size: 10px; }
+.stat strong {
+  color: var(--gold);
+  font-size: clamp(17px,3vw,25px);
+  overflow-wrap: anywhere;
+}
+.tag {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 20px;
+  background: #3b2930;
+  color: var(--gold);
+  font-size: 12px;
+  margin-bottom: 14px;
+}
+footer {
+  padding: 24px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 12px;
+}
+@media(max-width:750px) {
+  .layout { grid-template-columns: 1fr; }
+  .stats { grid-template-columns: 1fr; }
+  header { padding: 24px 5%; }
+}
+</style>
+</head>
+
+<body>
+<header>
+  <span class="tag">PROYEK MATEMATIKA DISKRIT</span>
+  <h1>Ulos Fraktal Studio</h1>
+  <p>Eksplorasi pola geometris melalui algoritma rekursif dan pengulangan.</p>
+</header>
+
+<main>
+  <div class="layout">
+    <section class="panel">
+      <h2>Visualisasi Motif</h2>
+
+      <canvas id="kanvas" width="720" height="540"
+        aria-label="Visualisasi pola geometris Ulos"></canvas>
+
+      <p class="note">
+        Pola ini merupakan interpretasi geometris untuk pembelajaran,
+        terinspirasi dari nama jenis Ulos. Gambar bukan reproduksi
+        autentik motif tradisional.
+      </p>
+
+      <button id="simpanPng" type="button">
+        Simpan Motif sebagai PNG
+      </button>
+    </section>
+
+    <section class="panel">
+      <h2>Pengaturan Motif</h2>
+
+      <label for="jenis">Jenis Ulos</label>
+      <select id="jenis">
+        <option value="sadum">Ulos Sadum</option>
+        <option value="hotang">Ulos Ragi Hotang</option>
+        <option value="ragidup">Ulos Ragidup</option>
+        <option value="sibolang">Ulos Sibolang</option>
+        <option value="mangiring">Ulos Mangiring</option>
+        <option value="bintang">Ulos Bintang Maratur</option>
+      </select>
+
+      <label for="level">
+        Level rekursi: <span id="levelText">1</span>
+      </label>
+      <input id="level" type="range" min="1" max="6" value="1">
+      <p class="note">
+        Naikkan level untuk melihat motif utama memiliki turunan yang semakin banyak.
+      </p>
+
+      <label for="baris">Jumlah baris</label>
+      <select id="baris">
+        <option value="2">2 baris</option>
+        <option value="3" selected>3 baris</option>
+        <option value="4">4 baris</option>
+        <option value="5">5 baris</option>
+      </select>
+
+      <label for="kolom">Jumlah kolom</label>
+      <select id="kolom">
+        <option value="2">2 kolom</option>
+        <option value="3">3 kolom</option>
+        <option value="4" selected>4 kolom</option>
+        <option value="5">5 kolom</option>
+      </select>
+
+      <hr style="border-color:#363a49; margin-top:22px;">
+
+      <h2 style="margin-top:20px;">Kustomisasi Motif</h2>
+
+      <label for="warnaUtama">Warna utama motif</label>
+      <input type="color" id="warnaUtama" value="#ef5350">
+
+      <label for="warnaKedua">Warna kedua motif</label>
+      <input type="color" id="warnaKedua" value="#f4d58d">
+
+      <label for="warnaLatar">Warna latar belakang</label>
+      <input type="color" id="warnaLatar" value="#291821">
+
+      <label for="kerapatan">
+        Kerapatan motif: <span class="nilai" id="kerapatanText">62%</span>
+      </label>
+      <input id="kerapatan" type="range" min="40" max="90" value="62">
+      <p class="note">
+        Nilai lebih besar membuat jarak antarmotif turunan semakin rapat.
+      </p>
+
+      <label for="ukuran">
+        Ukuran motif: <span class="nilai" id="ukuranText">100%</span>
+      </label>
+      <input id="ukuran" type="range" min="50" max="150" value="100">
+      <p class="note">
+        Atur ukuran motif untuk memperbesar atau memperkecil gambar pada kanvas.
+      </p>
+
+      <button id="ulang" type="button">
+        Kembalikan Pengaturan Awal
+      </button>
+
+      <p class="note" id="keterangan" aria-live="polite"></p>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h2>Live Analytics</h2>
+    <div class="stats">
+      <div class="stat">
+        <p>LEVEL REKURSI</p>
+        <strong id="statLevel">1</strong>
+      </div>
+      <div class="stat">
+        <p>TOTAL NODE</p>
+        <strong id="statNode">12</strong>
+      </div>
+      <div class="stat">
+        <p>POSISI MOTIF</p>
+        <strong id="statPosisi">12</strong>
+      </div>
+    </div>
+    <p class="note">
+      Node adalah jumlah motif yang berhasil digambar, termasuk motif turunan.
+      Posisi motif adalah hasil perkalian jumlah baris dan kolom.
+    </p>
+  </section>
+
+  <section class="panel">
+    <h2>Memahami Algoritma</h2>
+    <p class="note">
+      <strong>1. Input:</strong> program membaca jenis motif, level,
+      baris, kolom, warna, kerapatan, dan ukuran.<br>
+      <strong>2. Iterasi:</strong> dua perulangan for menempatkan motif
+      pada setiap baris dan kolom.<br>
+      <strong>3. Rekursi:</strong> fungsi memanggil dirinya sendiri untuk
+      menggambar empat motif turunan.<br>
+      <strong>4. Kondisi dasar:</strong> rekursi berhenti ketika level
+      mencapai 1 atau ukuran motif terlalu kecil.<br>
+      <strong>5. Analisis:</strong> jumlah node dan posisi diperbarui
+      setelah visualisasi selesai.<br>
+      <strong>6. Ekspor:</strong> kanvas dapat diunduh sebagai gambar PNG.
+    </p>
+  </section>
+</main>
+
+<footer>Ulos Fraktal Studio · Proyek Matematika Diskrit</footer>
+
+<script>
+"use strict";
+
+const kanvas = document.getElementById("kanvas");
+const ctx = kanvas.getContext("2d");
+
+const jenis = document.getElementById("jenis");
+const level = document.getElementById("level");
+const baris = document.getElementById("baris");
+const kolom = document.getElementById("kolom");
+
+const warnaUtama = document.getElementById("warnaUtama");
+const warnaKedua = document.getElementById("warnaKedua");
+const warnaLatar = document.getElementById("warnaLatar");
+const kerapatan = document.getElementById("kerapatan");
+const ukuranKontrol = document.getElementById("ukuran");
+
+function warnaMotif(nama) {
+  const palet = {
+    sadum:     ["#ef5350", "#f4d58d", "#291821"],
+    hotang:    ["#d9a85f", "#f6e4bd", "#29231c"],
+    ragidup:   ["#e6b66b", "#fff0ce", "#39242a"],
+    sibolang:  ["#78add7", "#e1eaf2", "#172735"],
+    mangiring: ["#e7b75f", "#f7e6c5", "#2c241b"],
+    bintang:   ["#f0ce75", "#fff0b9", "#30241c"]
+  };
+
+  const p = palet[nama] || palet.sadum;
+
+  return {
+    utama: warnaUtama.value,
+    kedua: warnaKedua.value,
+    latar: warnaLatar.value
+  };
+}
+
+function gambarDasar(x, y, ukuran, nama, warna) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.strokeStyle = warna.utama;
+  ctx.fillStyle = warna.kedua;
+  ctx.lineWidth = Math.max(0.8, ukuran * 0.035);
+  ctx.lineJoin = "round";
+
+  if (nama === "sadum") {
+    for (let i = 0; i < 4; i++) {
+      ctx.save();
+      ctx.rotate(i * Math.PI / 2);
+      ctx.beginPath();
+      ctx.ellipse(
+        0, -ukuran * 0.25,
+        ukuran * 0.15, ukuran * 0.28,
+        0, 0, Math.PI * 2
+      );
+      ctx.stroke();
+      ctx.restore();
+    }
+    ctx.beginPath();
+    ctx.arc(0, 0, ukuran * 0.1, 0, Math.PI * 2);
+    ctx.fill();
+
+  } else if (nama === "hotang") {
+    ctx.beginPath();
+    ctx.moveTo(0, -ukuran * 0.42);
+    ctx.lineTo(ukuran * 0.34, 0);
+    ctx.lineTo(0, ukuran * 0.42);
+    ctx.lineTo(-ukuran * 0.34, 0);
+    ctx.closePath();
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(-ukuran * 0.25, -ukuran * 0.25);
+    ctx.lineTo(ukuran * 0.25, ukuran * 0.25);
+    ctx.moveTo(ukuran * 0.25, -ukuran * 0.25);
+    ctx.lineTo(-ukuran * 0.25, ukuran * 0.25);
+    ctx.stroke();
+
+  } else if (nama === "ragidup") {
+    for (let i = 1; i <= 3; i++) {
+      ctx.beginPath();
+      ctx.arc(0, 0, ukuran * i / 4, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+  } else if (nama === "sibolang") {
+    ctx.beginPath();
+    ctx.moveTo(0, -ukuran * 0.42);
+    ctx.lineTo(ukuran * 0.3, 0);
+    ctx.lineTo(0, ukuran * 0.42);
+    ctx.lineTo(-ukuran * 0.3, 0);
+    ctx.closePath();
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(-ukuran * 0.38, 0);
+    ctx.lineTo(ukuran * 0.38, 0);
+    ctx.moveTo(0, -ukuran * 0.38);
+    ctx.lineTo(0, ukuran * 0.38);
+    ctx.stroke();
+
+  } else if (nama === "mangiring") {
+    for (let i = 0; i < 4; i++) {
+      ctx.beginPath();
+      ctx.arc(
+        Math.cos(i * Math.PI / 2) * ukuran * 0.23,
+        Math.sin(i * Math.PI / 2) * ukuran * 0.23,
+        ukuran * 0.11, 0, Math.PI * 2
+      );
+      ctx.stroke();
+    }
+
+    ctx.beginPath();
+    ctx.arc(0, 0, ukuran * 0.07, 0, Math.PI * 2);
+    ctx.fill();
+
+  } else {
+    for (let i = 0; i < 8; i++) {
+      const sudut = i * Math.PI / 4;
+      ctx.beginPath();
+      ctx.moveTo(
+        Math.cos(sudut) * ukuran * 0.12,
+        Math.sin(sudut) * ukuran * 0.12
+      );
+      ctx.lineTo(
+        Math.cos(sudut) * ukuran * 0.43,
+        Math.sin(sudut) * ukuran * 0.43
+      );
+      ctx.stroke();
+    }
+
+    ctx.beginPath();
+    ctx.arc(0, 0, ukuran * 0.12, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.restore();
+}
+
+// Fungsi rekursif untuk menggambar motif utama dan turunannya.
+function gambarRekursif(x, y, ukuran, tingkat, nama, warna) {
+  if (ukuran < 2) return 0;
+
+  gambarDasar(x, y, ukuran, nama, warna);
+  let node = 1;
+
+  // Kondisi dasar: berhenti jika level mencapai 1.
+  if (tingkat <= 1) return node;
+
+  const ukuranAnak = ukuran * 0.38;
+
+  // Nilai kerapatan besar menghasilkan jarak turunan lebih kecil.
+  const jarak = ukuran * (1.02 - Number(kerapatan.value) / 200);
+
+  const posisiAnak = [
+    [x, y - jarak],
+    [x + jarak, y],
+    [x, y + jarak],
+    [x - jarak, y]
+  ];
+
+  for (const [anakX, anakY] of posisiAnak) {
+    node += gambarRekursif(
+      anakX,
+      anakY,
+      ukuranAnak,
+      tingkat - 1,
+      nama,
+      warna
+    );
+  }
+
+  return node;
+}
+
+function tampilkanMotif() {
+  const nama = jenis.value;
+  const tingkat = Number(level.value);
+  const nBaris = Number(baris.value);
+  const nKolom = Number(kolom.value);
+  const warna = warnaMotif(nama);
+
+  ctx.clearRect(0, 0, kanvas.width, kanvas.height);
+  ctx.fillStyle = warna.latar;
+  ctx.fillRect(0, 0, kanvas.width, kanvas.height);
+
+  const lebarSel = kanvas.width / nKolom;
+  const tinggiSel = kanvas.height / nBaris;
+
+  const ukuran = Math.min(lebarSel, tinggiSel)
+    * 0.26
+    * Number(ukuranKontrol.value) / 100;
+
+  let totalNode = 0;
+
+  // Iterasi luar: baris. Iterasi dalam: kolom.
+  for (let i = 0; i < nBaris; i++) {
+    for (let j = 0; j < nKolom; j++) {
+      const x = lebarSel * (j + 0.5);
+      const y = tinggiSel * (i + 0.5);
+
+      totalNode += gambarRekursif(
+        x, y, ukuran, tingkat, nama, warna
+      );
+    }
+  }
+
+  document.getElementById("levelText").textContent = tingkat;
+  document.getElementById("statLevel").textContent = tingkat;
+
+  // Jumlah node berdasarkan motif yang benar-benar digambar.
+  document.getElementById("statNode").textContent =
+    totalNode.toLocaleString("id-ID");
+
+  document.getElementById("statPosisi").textContent =
+    (nBaris * nKolom).toLocaleString("id-ID");
+
+  document.getElementById("kerapatanText").textContent =
+    kerapatan.value + "%";
+
+  document.getElementById("ukuranText").textContent =
+    ukuranKontrol.value + "%";
+
+  document.getElementById("keterangan").textContent =
+    "Motif " + jenis.options[jenis.selectedIndex].text +
+    " · Level " + tingkat + " · " +
+    nBaris + " baris × " + nKolom + " kolom.";
+}
+
+// Memperbarui visualisasi saat pengaturan diubah.
+jenis.addEventListener("change", tampilkanMotif);
+level.addEventListener("input", tampilkanMotif);
+baris.addEventListener("change", tampilkanMotif);
+kolom.addEventListener("change", tampilkanMotif);
+
+warnaUtama.addEventListener("input", tampilkanMotif);
+warnaKedua.addEventListener("input", tampilkanMotif);
+warnaLatar.addEventListener("input", tampilkanMotif);
+kerapatan.addEventListener("input", tampilkanMotif);
+ukuranKontrol.addEventListener("input", tampilkanMotif);
+
+// Mengunduh gambar kanvas sebagai PNG.
+document.getElementById("simpanPng").addEventListener("click", () => {
+  const tautan = document.createElement("a");
+  tautan.download = "ulos-fraktal.png";
+  tautan.href = kanvas.toDataURL("image/png");
+  tautan.click();
+});
+
+// Mengembalikan semua kontrol ke pengaturan awal.
+document.getElementById("ulang").addEventListener("click", () => {
+  jenis.value = "sadum";
+  level.value = "1";
+  baris.value = "3";
+  kolom.value = "4";
+
+  warnaUtama.value = "#ef5350";
+  warnaKedua.value = "#f4d58d";
+  warnaLatar.value = "#291821";
+  kerapatan.value = "62";
+  ukuranKontrol.value = "100";
+
+  tampilkanMotif();
+});
+
+tampilkanMotif();
+</script>
+</body>
+</html>
